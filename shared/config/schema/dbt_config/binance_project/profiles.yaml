@@ -1,0 +1,24 @@
+binance_dwh:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'dataeng') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'dataeng123') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'dwh') }}"
+      schema: public
+      threads: 4
+      keepalives_idle: 0
+      
+    prod:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'dataeng') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'dataeng123') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'dwh') }}"
+      schema: public
+      threads: 8
+      keepalives_idle: 0

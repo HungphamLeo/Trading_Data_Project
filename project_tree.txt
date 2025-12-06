@@ -1,96 +1,73 @@
-.
-├── .dockerignore
-├── .env
-├── .git
-│   ├── FETCH_HEAD
-│   ├── HEAD
-│   ├── config
-│   ├── description
-│   ├── hooks
-│   │   ├── applypatch-msg.sample
-│   │   ├── commit-msg.sample
-│   │   ├── fsmonitor-watchman.sample
-│   │   ├── post-update.sample
-│   │   ├── pre-applypatch.sample
-│   │   ├── pre-commit.sample
-│   │   ├── pre-merge-commit.sample
-│   │   ├── pre-push.sample
-│   │   ├── pre-rebase.sample
-│   │   ├── pre-receive.sample
-│   │   ├── prepare-commit-msg.sample
-│   │   ├── push-to-checkout.sample
-│   │   ├── sendemail-validate.sample
-│   │   └── update.sample
-│   ├── index
-│   ├── info
-│   │   └── exclude
-│   ├── logs
-│   │   ├── HEAD
-│   │   └── refs
-│   │       ├── heads
-│   │       │   └── build_base_codeZ_05122025
-│   │       └── remotes
-│   │           └── origin
-│   │               ├── HEAD
-│   │               ├── build_base_codeZ_05122025
-│   │               └── staging
-│   ├── objects
-│   │   ├── info
-│   │   └── pack
-│   │       ├── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.idx
-│   │       ├── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.pack
-│   │       └── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.rev
-│   ├── packed-refs
-│   └── refs
-│       ├── heads
-│       │   └── build_base_codeZ_05122025
-│       ├── remotes
-│       │   └── origin
-│       │       ├── HEAD
-│       │       ├── build_base_codeZ_05122025
-│       │       └── staging
-│       └── tags
+
 ├── .github
 │   └── workflows
 ├── .gitignore
+├── Makefile
 ├── README.md
 ├── infra
 │   ├── docker
-│   │   └── dbt
+│   │   ├── ingestion
+│   │   │   └── Dockerfile
+│   │   └── processing
 │   │       └── Dockerfile
-│   └── docker-compose.yml
+│   └── docker_compose
+│       ├── core.yml
+│       └── processing.yaml
 ├── logger_storage
 ├── platform
 │   ├── api_gateway
-│   ├── data_processcor
-│   │   └── dbt
-│   │       ├── models
-│   │       │   ├── intermediate
-│   │       │   ├── marts
-│   │       │   └── staging
-│   │       └── snapshots
 │   ├── ingestion
+│   │   └── crypto
+│   │       └── binance
+│   │           ├── extract
+│   │           │   └── fetch_binance_klines.py
+│   │           ├── load
+│   │           └── transform
+│   ├── processing
+│   │   └── dbt
+│   │       └── binance
+│   │           ├── macros
+│   │           ├── models
+│   │           │   ├── int
+│   │           │   │   ├── int_kyc_history.sql
+│   │           │   │   └── int_transactions_enriched.sql
+│   │           │   ├── marts
+│   │           │   │   ├── marts_core__dim_user.sql
+│   │           │   │   └── marts_core__fact_transactions.sql
+│   │           │   └── staging
+│   │           │       ├── stg_rates.sql
+│   │           │       ├── stg_transactions.sql
+│   │           │       └── stg_users.sql
+│   │           ├── seeds
+│   │           ├── snapshots
+│   │           │   └── user_kyc_snapshots.sql
+│   │           └── tests
 │   ├── storage
-│   │   ├── postgresql
-│   │   └── redis
+│   │   ├── cache
+│   │   │   └── redis
+│   │   └── warehouse
+│   │       └── postgresql
+│   │           ├── dim
+│   │           ├── fact
+│   │           └── staging
 │   └── streaming
 ├── project_tree.txt
 ├── scripts
 ├── services
-│   └── test
+│   ├── test
+│   └── trading
 ├── shared
 │   ├── common_models
+│   │   └── crypto
 │   ├── config
-│   │   └── binance_data_config
-│   │       ├── envs
-│   │       │   └── dev.yaml
-│   │       └── pipelines
-│   │           └── config.yaml
+│   │   ├── envs
+│   │   └── schema
 │   ├── logger
-│   │   └── binance_setup
-│   │       └── logger.py
+│   │   └── python_logger.py
 │   └── utils
 │       └── binance_setup.py
 └── temp_data_storage
+    ├── transactions.xlsx
+    └── users.xlsx
 
-50 directories, 44 files
+81 directories, 72 files
