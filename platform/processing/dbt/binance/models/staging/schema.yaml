@@ -1,0 +1,115 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw data loaded from CSV/Parquet files
+    schema: public
+    tables:
+      - name: transactions
+        description: Raw transaction data
+        columns:
+          - name: tx_id
+            description: Unique transaction identifier
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: User identifier
+            tests:
+              - not_null
+          - name: created_at
+            tests:
+              - not_null
+              
+      - name: users
+        description: Raw user data
+        columns:
+          - name: user_id
+            description: Unique user identifier
+            tests:
+              - unique
+              - not_null
+          - name: kyc_level
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['L0', 'L1', 'L2']
+                  
+      - name: rates
+        description: Raw rate data from Binance
+        columns:
+          - name: symbol
+            tests:
+              - not_null
+          - name: open_time
+            tests:
+              - not_null
+
+models:
+  - name: stg_transactions
+    description: Staging layer for transactions with cleaned and typed columns
+    columns:
+      - name: tx_id
+        description: Unique transaction identifier
+        tests:
+          - unique
+          - not_null
+      - name: user_id
+        description: User who made the transaction
+        tests:
+          - not_null
+      - name: created_at_utc
+        description: Transaction timestamp in UTC
+        tests:
+          - not_null
+      - name: status
+        description: Transaction status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['COMPLETED', 'PENDING', 'FAILED', 'CANCELLED']
+      - name: source_amount
+        description: Amount in source currency
+        tests:
+          - not_null
+      - name: destination_amount
+        description: Amount in destination currency
+        tests:
+          - not_null
+          
+  - name: stg_users
+    description: Staging layer for users with cleaned KYC levels
+    columns:
+      - name: user_id
+        description: Unique user identifier
+        tests:
+          - unique
+          - not_null
+      - name: kyc_level
+        description: KYC verification level
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['L0', 'L1', 'L2']
+      - name: updated_at
+        description: Last update timestamp
+        tests:
+          - not_null
+          
+  - name: stg_rates
+    description: Staging layer for exchange rates
+    columns:
+      - name: symbol
+        description: Trading pair symbol
+        tests:
+          - not_null
+      - name: open_time_utc
+        description: Candle open time
+        tests:
+          - not_null
+      - name: price_close
+        description: Closing price
+        tests:
+          - not_null
+      - name: base_currency
+        description: Base currency extracted from symbol

@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: de_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dataeng}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dataeng123}
+      POSTGRES_DB: ${POSTGRES_DB:-dwh}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../platform/ingestion/crypto/binance/load:/docker-entrypoint-initdb.d
+    networks:
+      - data_platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dataeng}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: de_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - data_platform
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingestion:
+    build:
+      context: ../..
+      dockerfile: infra/docker/ingestion/Dockerfile
+    container_name: de_ingestion
+    env_file:
+      - ../../.env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ../../platform/ingestion:/app/platform/ingestion
+      - ../../shared:/app/shared
+      - ../../scripts:/app/scripts
+      - ../../temp_data_storage:/app/temp_data_storage
+      - ../../logger_storage:/app/logger_storage
+      - ../../output:/app/output
+    networks:
+      - data_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: tail -f /dev/null
+
+  dbt:
+    build:
+      context: ../..
+      dockerfile: infra/docker/processing/dbt_processing/Dockerfile
+    container_name: de_dbt
+    env_file:
+      - ../../.env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - DBT_PROFILES_DIR=/app/platform/processing/dbt/binance/config
+    volumes:
+      - ../../platform/processing/dbt/binance:/app/dbt_project
+      - ../../shared:/app/shared
+      - ../../logger_storage:/app/logger_storage
+    working_dir: /app/dbt_project
+    networks:
+      - data_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: tail -f /dev/null
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  data_platform:
+    driver: bridge

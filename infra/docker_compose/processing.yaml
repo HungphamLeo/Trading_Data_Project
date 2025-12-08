@@ -1,0 +1,206 @@
+version: '3.9'
+
+services:
+  # ============================================
+  # Storage Layer
+  # ============================================
+  
+  minio:
+    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: etl-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - etl-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: etl-postgres
+    environment:
+      POSTGRES_USER: dbt_user
+      POSTGRES_PASSWORD: dbt_password
+      POSTGRES_DB: analytics_dw
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbt_user -d analytics_dw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - etl-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: etl-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - etl-network
+
+  # ============================================
+  # Orchestration
+  # ============================================
+
+  prefect-server:
+    image: prefecthq/prefect:2.14-python3.11
+    container_name: etl-prefect-server
+    command: prefect server start --host 0.0.0.0
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://dbt_user:dbt_password@postgres:5432/prefect_db
+      PREFECT_SERVER_API_HOST: 0.0.0.0
+    ports:
+      - "4200:4200"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - etl-network
+
+  # ============================================
+  # Application Services
+  # ============================================
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: etl-api-gateway
+    environment:
+      ENV: development
+      LOG_LEVEL: debug
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      POSTGRES_DSN: postgresql://dbt_user:dbt_password@postgres:5432/analytics_dw
+      REDIS_URL: redis://redis:6379/0
+      BINANCE_BASE_URL: https://api.binance.com
+    ports:
+      - "8080:8080"
+    depends_on:
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./config:/app/config:ro
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+  data-processor:
+    build:
+      context: ./services/data-processor
+      dockerfile: Dockerfile
+    container_name: etl-data-processor
+    environment:
+      ENV: development
+      LOG_LEVEL: INFO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      POSTGRES_DSN: postgresql://dbt_user:dbt_password@postgres:5432/analytics_dw
+      PREFECT_API_URL: http://prefect-server:4200/api
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - minio
+      - postgres
+      - redis
+      - prefect-server
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+    networks:
+      - etl-network
+    restart: unless-stopped
+
+  dbt:
+    build:
+      context: ./dbt
+      dockerfile: Dockerfile
+    container_name: etl-dbt
+    environment:
+      DBT_PROFILES_DIR: /dbt
+      DBT_TARGET: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./dbt:/dbt
+      - ./config/dbt/profiles.yml:/dbt/profiles.yml:ro
+    networks:
+      - etl-network
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+
+  # ============================================
+  # Monitoring (Optional - enable as needed)
+  # ============================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: etl-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - etl-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: etl-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    networks:
+      - etl-network
+    profiles:
+      - monitoring
+
+volumes:
+  minio_data:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  etl-network:
+    driver: bridge

@@ -1,0 +1,345 @@
+. 
+├── .dockerignore
+├── .env
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── FETCH_HEAD
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   ├── sendemail-validate.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   └── build_base_codeZ_05122025
+│   │       └── remotes
+│   │           └── origin
+│   │               ├── HEAD
+│   │               ├── build_base_codeZ_05122025
+│   │               └── staging
+│   ├── objects
+│   │   ├── 01
+│   │   │   └── 19f47a9a2ed16f39db0afda8ad1176986d1d29
+│   │   ├── 07
+│   │   │   ├── 202a0f9156b75486c2bb89541d5d33d3a7c56b
+│   │   │   └── ce48b94091efca59aeb2bf2bc9a0917d18a51e
+│   │   ├── 08
+│   │   │   └── 606a339565d0649f6bb362bbe7cc817ffb7b94
+│   │   ├── 09
+│   │   │   ├── ba378f57a4d34c1abba0857a381863bdfc20ae
+│   │   │   └── c6fd214ea5b37ce328da806799bdd561b9996a
+│   │   ├── 0a
+│   │   │   └── 7de386c111ae80b514c89036c948d69eb51691
+│   │   ├── 0c
+│   │   │   └── a5409eaff256e225cb6266fa8ca635b947eb26
+│   │   ├── 0f
+│   │   │   └── 44475e7cd542364330d89bc32a7946bf3a8296
+│   │   ├── 13
+│   │   │   └── d704ce54e37b08e20953748e026ccd60bc7a32
+│   │   ├── 14
+│   │   │   └── 57537d3db563735ec5b34d125e035e994b0e3e
+│   │   ├── 17
+│   │   │   └── 960567e9efff94df9d5e37f8dcce67f743037e
+│   │   ├── 1a
+│   │   │   └── e49f2a49f9cc672cf210c4de475c7a096a807a
+│   │   ├── 1c
+│   │   │   └── 0364b2f7618d297dd7eda029f72572d96a2d88
+│   │   ├── 1d
+│   │   │   └── 7292a4b9747cd5f83675a567171b51c0cfc5dd
+│   │   ├── 1f
+│   │   │   └── b037fc5ac687ccdb9ab0f504d03fb355f72716
+│   │   ├── 25
+│   │   │   └── 6473e24bc070541fb602942a7933bc1a1f6c95
+│   │   ├── 28
+│   │   │   ├── 1d3f9ff62b934c278cbe0d24d07b446eb3a8c4
+│   │   │   └── cf3355db6952369a8903f2222f22623ad128ce
+│   │   ├── 2c
+│   │   │   └── 625e8876a349e96692bba5dbfa67dcd9e9a216
+│   │   ├── 2d
+│   │   │   └── 7978712169b7d1e09cee7739462b86262560e3
+│   │   ├── 2e
+│   │   │   └── cb39210c4dde8c948ec0ec5ea88bde58fe11a0
+│   │   ├── 35
+│   │   │   └── 0bc85bee4152d6eafa4a420b5c5fcffa043b43
+│   │   ├── 36
+│   │   │   └── 7d92c2e961be243047eadd0c02ee4aaf4a35c4
+│   │   ├── 39
+│   │   │   └── f3e09a8dde519c8aacac9c2e288a016c2eaaf2
+│   │   ├── 3b
+│   │   │   └── 4bcdeb3b92a8622932f02d0f6d6f6ce1029eeb
+│   │   ├── 40
+│   │   │   └── 861b41e6e69519c3ec12014725192a42dac42a
+│   │   ├── 45
+│   │   │   ├── 74ff1b880e3a2ce9ac3aa96c673104687a4471
+│   │   │   └── ccb4223b64d3c96d25eb8e43395ecf1b917d28
+│   │   ├── 47
+│   │   │   └── 7d82f940ecc609da177c223c702472eb1fb593
+│   │   ├── 4a
+│   │   │   └── 50777626e0822aab7dc5376baeb70944eca195
+│   │   ├── 4c
+│   │   │   ├── 93324b1a2bf70c42f44298352416f9c8f62a68
+│   │   │   └── c8d218e1786ab4e03ac9170315bfaf3521876e
+│   │   ├── 4d
+│   │   │   └── c49b8725d1002b595d137062f1ffb96a5c7864
+│   │   ├── 4e
+│   │   │   └── 80018458a35cc56f08bf38de358b061f29d8d8
+│   │   ├── 4f
+│   │   │   └── ae9bcb88bae8fc45363132b45babcf2b1ed70b
+│   │   ├── 59
+│   │   │   ├── 86b38220f429c331ee1bb202239ae75efd7526
+│   │   │   └── bfd88b1776255dff524509bbdf26f589f1d32d
+│   │   ├── 5a
+│   │   │   └── bc13c19da63fcf9faa4f915258a88da8fe955d
+│   │   ├── 5b
+│   │   │   └── 6560ad35a9a7b2bec535ff125e205f544224d3
+│   │   ├── 5d
+│   │   │   └── b06fe3c5c7a60782dfd304966a429f90189469
+│   │   ├── 61
+│   │   │   └── ef6b213cb83922e75b47df677b4cb7eee8d528
+│   │   ├── 63
+│   │   │   ├── 379ed4df5fdd11fb1461d8bc5c613550e60408
+│   │   │   └── 6a1090960812e205801e29b7a454afd0f11444
+│   │   ├── 68
+│   │   │   ├── 206ef67b43d50a13b0627ea8e5f53083ee1b76
+│   │   │   └── 80950b0b733c11458cb2e12cea291cd82d2b43
+│   │   ├── 69
+│   │   │   └── 78ac1193f57b6d075bde8eb38328461b7ad553
+│   │   ├── 6b
+│   │   │   └── 4e5e7f64131d880276a823f438868f9aac8b4f
+│   │   ├── 6d
+│   │   │   └── c3c0791e8878cbf37943d4fb453e45bbbe6d2a
+│   │   ├── 6e
+│   │   │   └── 7a8915be04d55e95b5a448a07ea8ca191bf2bd
+│   │   ├── 71
+│   │   │   └── 35b4d7d05c11a87cdebd80d3a80a38bffb923e
+│   │   ├── 72
+│   │   │   └── 92a8c272da8314ae5aef7300231861dc1d7f5a
+│   │   ├── 75
+│   │   │   └── f5d839e2a0bae930ec8feb99ed673320221ea8
+│   │   ├── 76
+│   │   │   └── 2f568830a1642097b3a3ed7069df937fd3dee3
+│   │   ├── 77
+│   │   │   └── 781b74647f35df5c003e78a0d331fcb928f706
+│   │   ├── 84
+│   │   │   └── e46d3c4fae6eb204a28bc2921b453c22c15bc4
+│   │   ├── 8b
+│   │   │   └── ae5a7afa06535b7a28cf63decac9edc5c1375c
+│   │   ├── 8d
+│   │   │   └── cc6b5dc7e906fa596c8bd75c405426ee5adc57
+│   │   ├── 8f
+│   │   │   └── 32f8ebd85c4827094aa69a0ffba9c004eefabc
+│   │   ├── 91
+│   │   │   └── 4f752855228cfbfb902a6587cfaf56ef087294
+│   │   ├── 99
+│   │   │   └── 8fc49a66a705e5f7e984b6529bbd6eaa10e021
+│   │   ├── 9b
+│   │   │   └── 2f5220521943d6858a17b0a7d5dcb913aa5f94
+│   │   ├── 9c
+│   │   │   └── 1ea56ceb0a572c72f8cc3f4bcc75a8f7bffd50
+│   │   ├── 9d
+│   │   │   └── 84cf62030e11887bc44714936b9b7be0691efd
+│   │   ├── a0
+│   │   │   └── 9f8b6f2cf5d5773580fa4c597f733bab4a6b5d
+│   │   ├── a1
+│   │   │   └── 2be2060023eb78a6d5edf9c2134b19ca649c52
+│   │   ├── a3
+│   │   │   └── 5e359d144ba8c1960ada905087703efac4249c
+│   │   ├── a4
+│   │   │   └── 36cf7d0213fddc693fd91bed9961a5725e697b
+│   │   ├── a6
+│   │   │   └── 0e70f0386070bc8af7d39ba20e0d8c46a592ef
+│   │   ├── a7
+│   │   │   └── abd06c3336b343a6b6443ca5f4bc30d0c9a6f3
+│   │   ├── a8
+│   │   │   └── af0bb7f846d75dd064abc344a0400002befef7
+│   │   ├── a9
+│   │   │   └── 7412c34d66d89d9e353a4f0f6b8910f2fcfd23
+│   │   ├── b4
+│   │   │   └── b4aa3f8995f07be06adfd93db9fa174eeae6a6
+│   │   ├── ba
+│   │   │   └── 675d5bc6da37f3749b1ef2f0e30686c9b1b486
+│   │   ├── bb
+│   │   │   └── 5b335f2e4fd9f8fd39100e7fa09486b607c00b
+│   │   ├── bf
+│   │   │   └── 3e53857ec1d1c0789dff1c858d4e8373b4018d
+│   │   ├── c0
+│   │   │   └── 8938c36bcfc885c225a5bdeef187bd05dfd6aa
+│   │   ├── c1
+│   │   │   └── f6a41f1723f8f196394ef4ef0c73943044e7eb
+│   │   ├── c2
+│   │   │   └── 7a862a3a836c5fe723f1c5d2bce405286f3f7d
+│   │   ├── c3
+│   │   │   ├── 3d874eb3c25fdaae0fec65fa919c68a8dfc54b
+│   │   │   └── 9ba1a16413ae41f0de86cf43b3fcc4d5eefd9a
+│   │   ├── cb
+│   │   │   └── c9f2f17b94034426b1dabb4832a8b7b245dbce
+│   │   ├── ce
+│   │   │   └── 503a7ea7d1e105db313e519bc5499f2652b8d8
+│   │   ├── cf
+│   │   │   └── 4bca4cd5f757e394ea8641839858e49aa2993c
+│   │   ├── d3
+│   │   │   └── 75fc22a2195508d12ddf6363a1c4e73fd6b076
+│   │   ├── d5
+│   │   │   ├── 0a544f039d59c49720d69ab7d5e6a054fdeca1
+│   │   │   └── 18fd41b645d73458a09a920282ef1b0d44142f
+│   │   ├── d6
+│   │   │   └── 604a548a85c7a11538e4e4a81b1c0b2c93281a
+│   │   ├── d7
+│   │   │   └── 86abd889c12ef6c443cf4fdfb19c39c719d7af
+│   │   ├── d8
+│   │   │   └── ccb4abe663c241a5c812a084d15757642ca69f
+│   │   ├── d9
+│   │   │   └── 2542817c99ebeb443849347c99aacaddd63ad3
+│   │   ├── e1
+│   │   │   └── fb56b871c26ae10afe7707c456ac13849f1bd4
+│   │   ├── e2
+│   │   │   └── b8cfac23a1c36f2d964743d2e5b87279677ae2
+│   │   ├── e5
+│   │   │   └── 55b0716e7d4a0f877ec77a12de2fcc8dc7b7c6
+│   │   ├── e6
+│   │   │   ├── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+│   │   │   └── ce3e15905e5cd986db5d80d3766202c334497f
+│   │   ├── e8
+│   │   │   └── ed0ef62ffb8ca1a28c3a1c58714a7a52102988
+│   │   ├── e9
+│   │   │   ├── 30b0bcc442c9ff8a1ad112dfbcc883941f1dad
+│   │   │   └── d02becea9ebc5539415f1b804d3978f62b37c1
+│   │   ├── ec
+│   │   │   ├── 0e57aed2d4ee89d9d4385e36ab025c46a7753e
+│   │   │   ├── 1b9df30bf14a2817d4d03010d24611d4e9ed31
+│   │   │   └── a670923f66e5c472f0fd573d81010592cc3ca8
+│   │   ├── ef
+│   │   │   └── 46877a16419e29625af5d3f63f40eb81a99aae
+│   │   ├── f1
+│   │   │   ├── 7531a1b90569aeb37f141816168c32bf79ee98
+│   │   │   └── 980f9a8cc1d7d8e7924cc7687d9b2c9367bc75
+│   │   ├── f3
+│   │   │   └── e763fcd1dced09f7e705901a7ebf9da9bf4285
+│   │   ├── f6
+│   │   │   └── 5513df9fa6908467deecc87575c75e366fc2a7
+│   │   ├── fb
+│   │   │   └── 0b683965402b0cf886c7cc07bc6bd92360ef25
+│   │   ├── fd
+│   │   │   └── 3e046a56da617051c3ff2b343bf75ed6914631
+│   │   ├── info
+│   │   └── pack
+│   │       ├── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.idx
+│   │       ├── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.pack
+│   │       └── pack-f8150636a2e37aa293972e18c5e8da684ab01b64.rev
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       │   └── build_base_codeZ_05122025
+│       ├── remotes
+│       │   └── origin
+│       │       ├── HEAD
+│       │       ├── build_base_codeZ_05122025
+│       │       └── staging
+│       └── tags
+├── .github
+│   └── workflows
+├── .gitignore
+├── Makefile
+├── README.md
+├── infra
+│   ├── docker
+│   │   ├── ingestion
+│   │   │   └── Dockerfile
+│   │   └── processing
+│   │       └── dbt_processing
+│   │           └── Dockerfile
+│   └── docker_compose
+│       ├── core.yml
+│       └── processing.yaml
+├── logger_storage
+├── platform
+│   ├── api_gateway
+│   ├── ingestion
+│   │   └── crypto
+│   │       └── binance
+│   │           ├── extract
+│   │           │   └── fetch_binance_klines.py
+│   │           ├── load
+│   │           │   └── _init_tables.sql
+│   │           └── transform
+│   ├── processing
+│   │   └── dbt
+│   │       └── binance
+│   │           ├── config
+│   │           │   ├── dbt_project.yaml
+│   │           │   └── profiles.yaml
+│   │           ├── macros
+│   │           ├── models
+│   │           │   ├── int
+│   │           │   │   ├── int_kyc_history.sql
+│   │           │   │   └── int_transactions_enriched.sql
+│   │           │   ├── marts
+│   │           │   │   ├── marts_core__dim_user.sql
+│   │           │   │   └── marts_core__fact_transactions.sql
+│   │           │   └── staging
+│   │           │       ├── schema.yaml
+│   │           │       ├── stg_rates.sql
+│   │           │       ├── stg_transactions.sql
+│   │           │       └── stg_users.sql
+│   │           ├── seeds
+│   │           ├── snapshots
+│   │           │   └── user_kyc_snapshots.sql
+│   │           └── tests
+│   ├── storage
+│   │   ├── cache
+│   │   │   └── redis
+│   │   └── warehouse
+│   │       ├── base_storage.py
+│   │       └── postgresql
+│   │           ├── _init_postgresql.py
+│   │           ├── dim
+│   │           ├── fact
+│   │           └── staging
+│   └── streaming
+├── project_tree.txt
+├── requirements_dbt.txt
+├── requirements_ingestion.txt
+├── scripts
+│   ├── sample_bi_queries.sql
+│   └── test.ipynb
+├── services
+│   ├── test
+│   └── trading
+├── shared
+│   ├── common_models
+│   │   └── crypto
+│   ├── config
+│   │   ├── config_loader.py
+│   │   ├── envs
+│   │   ├── schema
+│   │   └── services
+│   │       └── binance_services.yaml
+│   ├── logger
+│   │   └── python_logger.py
+│   └── utils
+│       ├── files
+│       │   └── binance_setup.py
+│       └── networks
+└── temp_data_storage
+    ├── transactions.xlsx
+    └── users.xlsx
+
+165 directories, 178 files
