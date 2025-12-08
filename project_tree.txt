@@ -1,4 +1,3 @@
-
 ├── .github
 │   └── workflows
 ├── .gitignore
@@ -9,7 +8,8 @@
 │   │   ├── ingestion
 │   │   │   └── Dockerfile
 │   │   └── processing
-│   │       └── Dockerfile
+│   │       └── dbt_processing
+│   │           └── Dockerfile
 │   └── docker_compose
 │       ├── core.yml
 │       └── processing.yaml
@@ -22,10 +22,14 @@
 │   │           ├── extract
 │   │           │   └── fetch_binance_klines.py
 │   │           ├── load
+│   │           │   └── _init_tables.sql
 │   │           └── transform
 │   ├── processing
 │   │   └── dbt
 │   │       └── binance
+│   │           ├── config
+│   │           │   ├── dbt_project.yaml
+│   │           │   └── profiles.yaml
 │   │           ├── macros
 │   │           ├── models
 │   │           │   ├── int
@@ -35,6 +39,7 @@
 │   │           │   │   ├── marts_core__dim_user.sql
 │   │           │   │   └── marts_core__fact_transactions.sql
 │   │           │   └── staging
+│   │           │       ├── schema.yaml
 │   │           │       ├── stg_rates.sql
 │   │           │       ├── stg_transactions.sql
 │   │           │       └── stg_users.sql
@@ -46,13 +51,18 @@
 │   │   ├── cache
 │   │   │   └── redis
 │   │   └── warehouse
+│   │       ├── base_storage.py
 │   │       └── postgresql
+│   │           ├── _init_postgresql.py
 │   │           ├── dim
 │   │           ├── fact
 │   │           └── staging
 │   └── streaming
 ├── project_tree.txt
+├── requirements_dbt.txt
+├── requirements_ingestion.txt
 ├── scripts
+│   └── sample_bi_queries.sql
 ├── services
 │   ├── test
 │   └── trading
@@ -65,9 +75,11 @@
 │   ├── logger
 │   │   └── python_logger.py
 │   └── utils
-│       └── binance_setup.py
+│       ├── files
+│       │   └── binance_setup.py
+│       └── networks
 └── temp_data_storage
     ├── transactions.xlsx
     └── users.xlsx
 
-81 directories, 72 files
+146 directories, 152 files

@@ -1,255 +1,207 @@
-.PHONY: help init up down restart logs clean test build deploy
+.PHONY: help build up down restart logs clean ingest load dbt-deps dbt-snapshot dbt-run dbt-test dbt-docs full-pipeline status
 
-# Colors for output
-GREEN  := \033[0;32m
-YELLOW := \033[0;33m
-NC     := \033[0m # No Color
+COMPOSE_FILE := infra/docker_compose/core.yml
 
-help: ## Show this help message
-	@echo '$(GREEN)Available commands:$(NC)'
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
+help:
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🚀 Crypto Data Platform - Available Commands"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@echo "  📦 Infrastructure Management:"
+	@echo "    make build          - Build Docker images"
+	@echo "    make up             - Start all services"
+	@echo "    make down           - Stop all services"
+	@echo "    make restart        - Restart all services"
+	@echo "    make status         - Check services status"
+	@echo "    make logs           - View logs from all services"
+	@echo "    make logs-ingest    - View ingestion logs"
+	@echo "    make logs-dbt       - View DBT logs"
+	@echo "    make logs-postgres  - View PostgreSQL logs"
+	@echo "    make clean          - Stop services and clean data"
+	@echo ""
+	@echo "  📥 Data Pipeline:"
+	@echo "    make ingest         - Fetch data from Binance API"
+	@echo "    make load           - Load data to PostgreSQL"
+	@echo "    make dbt-deps       - Install DBT dependencies"
+	@echo "    make dbt-snapshot   - Run DBT snapshots (KYC history)"
+	@echo "    make dbt-run        - Run all DBT models"
+	@echo "    make dbt-test       - Run DBT tests"
+	@echo "    make dbt-docs       - Generate and serve DBT docs"
+	@echo "    make full-pipeline  - Run complete pipeline end-to-end"
+	@echo ""
+	@echo "  🔍 Data Verification:"
+	@echo "    make verify-db      - Verify database tables"
+	@echo "    make psql           - Connect to PostgreSQL"
+	@echo "    make query-sample   - Run sample queries"
+	@echo ""
+	@echo "  🛠️  Development:"
+	@echo "    make shell-ingest   - Shell into ingestion container"
+	@echo "    make shell-dbt      - Shell into DBT container"
+	@echo "    make shell-postgres - Shell into PostgreSQL"
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ============================================
-# Environment Setup
-# ============================================
+# ==========================================
+# Infrastructure Commands
+# ==========================================
 
-init: ## Initialize project (first time setup)
-	@echo "$(GREEN)Initializing project...$(NC)"
-	cp .env.example .env || true
-	mkdir -p data/{bronze,silver,gold,samples,logs}
-	mkdir -p output
-	docker network create etl-network || true
-	@echo "$(GREEN)✓ Project initialized$(NC)"
+build:
+	@echo "🔨 Building Docker images..."
+	docker-compose -f $(COMPOSE_FILE) build
 
-up: ## Start all services
-	@echo "$(GREEN)Starting services...$(NC)"
-	docker-compose up -d
-	@echo "$(GREEN)✓ Services started$(NC)"
-	@$(MAKE) status
+up:
+	@echo "🚀 Starting services..."
+	docker-compose -f $(COMPOSE_FILE) up -d
+	@echo "⏳ Waiting for PostgreSQL to be ready..."
+	@sleep 5
+	@docker-compose -f $(COMPOSE_FILE) exec -T postgres pg_isready -U dataeng || true
+	@echo "✅ All services started!"
+	@make status
 
-down: ## Stop all services
-	@echo "$(YELLOW)Stopping services...$(NC)"
-	docker-compose down
-	@echo "$(GREEN)✓ Services stopped$(NC)"
+down:
+	@echo "🛑 Stopping services..."
+	docker-compose -f $(COMPOSE_FILE) down
 
-restart: ## Restart all services
-	@$(MAKE) down
-	@$(MAKE) up
+restart: down up
 
-status: ## Show service status
-	@echo "$(GREEN)Service Status:$(NC)"
-	@docker-compose ps
+status:
+	@echo "📊 Services Status:"
+	@docker-compose -f $(COMPOSE_FILE) ps
 
-logs: ## Tail logs from all services
-	docker-compose logs -f
+logs:
+	docker-compose -f $(COMPOSE_FILE) logs -f
 
-logs-api: ## Tail logs from API Gateway
-	docker-compose logs -f api-gateway
+logs-ingest:
+	docker-compose -f $(COMPOSE_FILE) logs -f ingestion
 
-logs-processor: ## Tail logs from Data Processor
-	docker-compose logs -f data-processor
+logs-dbt:
+	docker-compose -f $(COMPOSE_FILE) logs -f dbt
 
-logs-prefect: ## Tail logs from Prefect
-	docker-compose logs -f prefect-server
+logs-postgres:
+	docker-compose -f $(COMPOSE_FILE) logs -f postgres
 
-# ============================================
-# Development
-# ============================================
+clean:
+	@echo "🧹 Cleaning up..."
+	docker-compose -f $(COMPOSE_FILE) down -v
+	@echo "🗑️  Removing output files..."
+	rm -rf output/raw_rates/*.parquet
+	rm -rf logger_storage/*.log
+	@echo "✅ Cleanup complete!"
 
-build: ## Build all Docker images
-	@echo "$(GREEN)Building images...$(NC)"
-	docker-compose build
-	@echo "$(GREEN)✓ Build complete$(NC)"
+# ==========================================
+# Data Pipeline Commands
+# ==========================================
 
-build-api: ## Build API Gateway image
-	docker-compose build api-gateway
+ingest:
+	@echo "📥 Starting Binance data ingestion..."
+	docker-compose -f $(COMPOSE_FILE) exec ingestion python platform/ingestion/crypto/binance/extract/fetch_binance_klines.py
+	@echo "✅ Ingestion complete!"
 
-build-processor: ## Build Data Processor image
-	docker-compose build data-processor
+load:
+	@echo "📤 Loading data to PostgreSQL..."
+	docker-compose -f $(COMPOSE_FILE) exec ingestion python scripts/load_data_to_postgres.py
+	@echo "✅ Data loaded!"
 
-shell-api: ## Open shell in API Gateway container
-	docker-compose exec api-gateway sh
+dbt-deps:
+	@echo "📦 Installing DBT dependencies..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt deps
+	@echo "✅ Dependencies installed!"
 
-shell-processor: ## Open shell in Data Processor container
-	docker-compose exec data-processor bash
+dbt-snapshot:
+	@echo "📸 Running DBT snapshots..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt snapshot
+	@echo "✅ Snapshots complete!"
 
-shell-db: ## Open PostgreSQL shell
-	docker-compose exec postgres psql -U dbt_user -d analytics_dw
+dbt-run:
+	@echo "🔄 Running DBT models..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt run
+	@echo "✅ DBT models built!"
 
-# ============================================
-# Data Operations
-# ============================================
+dbt-test:
+	@echo "🧪 Running DBT tests..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt test
+	@echo "✅ Tests complete!"
 
-seed: ## Load sample data
-	@echo "$(GREEN)Loading sample data...$(NC)"
-	docker-compose exec data-processor python scripts/seed_data.py
-	@echo "$(GREEN)✓ Sample data loaded$(NC)"
+dbt-docs:
+	@echo "📚 Generating DBT documentation..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt docs generate
+	@echo "🌐 Serving docs at http://localhost:8080"
+	docker-compose -f $(COMPOSE_FILE) exec dbt dbt docs serve --port 8080
 
-dbt-deps: ## Install dbt dependencies
-	docker-compose exec dbt dbt deps
+full-pipeline:
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🚀 Running Full Data Pipeline"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@echo "📥 Step 1/5: Ingesting data from Binance API..."
+	@make ingest
+	@echo ""
+	@echo "📤 Step 2/5: Loading data to PostgreSQL..."
+	@make load
+	@echo ""
+	@echo "📸 Step 3/5: Running DBT snapshots (KYC history tracking)..."
+	@make dbt-snapshot
+	@echo ""
+	@echo "🔄 Step 4/5: Running DBT transformations (staging → int → marts)..."
+	@make dbt-run
+	@echo ""
+	@echo "🧪 Step 5/5: Running data quality tests..."
+	@make dbt-test
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  ✅ Pipeline Complete! All steps executed successfully."
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@make verify-db
 
-dbt-run: ## Run dbt models
-	@echo "$(GREEN)Running dbt models...$(NC)"
-	docker-compose exec dbt dbt run
-	@echo "$(GREEN)✓ dbt run complete$(NC)"
+# ==========================================
+# Data Verification Commands
+# ==========================================
 
-dbt-test: ## Run dbt tests
-	@echo "$(GREEN)Running dbt tests...$(NC)"
-	docker-compose exec dbt dbt test
-	@echo "$(GREEN)✓ dbt tests complete$(NC)"
+verify-db:
+	@echo "🔍 Verifying database..."
+	@docker-compose -f $(COMPOSE_FILE) exec -T postgres psql -U dataeng -d dwh -c "\
+		SELECT 'transactions' as table_name, COUNT(*) as row_count FROM transactions \
+		UNION ALL \
+		SELECT 'users', COUNT(*) FROM users \
+		UNION ALL \
+		SELECT 'rates', COUNT(*) FROM rates \
+		UNION ALL \
+		SELECT 'fact_transactions', COUNT(*) FROM marts.marts_core__fact_transactions;"
 
-dbt-snapshot: ## Run dbt snapshots
-	@echo "$(GREEN)Running dbt snapshots...$(NC)"
-	docker-compose exec dbt dbt snapshot
-	@echo "$(GREEN)✓ dbt snapshots complete$(NC)"
+psql:
+	@echo "🔌 Connecting to PostgreSQL..."
+	docker-compose -f $(COMPOSE_FILE) exec postgres psql -U dataeng -d dwh
 
-dbt-docs: ## Generate and serve dbt docs
-	docker-compose exec dbt dbt docs generate
-	docker-compose exec dbt dbt docs serve --port 8081
+query-sample:
+	@echo "📊 Running sample queries..."
+	@docker-compose -f $(COMPOSE_FILE) exec -T postgres psql -U dataeng -d dwh -f /scripts/sample_bi_queries.sql || true
 
-pipeline-run: ## Run full ETL pipeline
-	@echo "$(GREEN)Running full ETL pipeline...$(NC)"
-	@$(MAKE) dbt-snapshot
-	@$(MAKE) dbt-run
-	@$(MAKE) dbt-test
-	@echo "$(GREEN)✓ Pipeline complete$(NC)"
+# ==========================================
+# Development Commands
+# ==========================================
 
-# ============================================
-# Testing
-# ============================================
+shell-ingest:
+	@echo "🐚 Opening shell in ingestion container..."
+	docker-compose -f $(COMPOSE_FILE) exec ingestion bash
 
-test: ## Run all tests
-	@$(MAKE) test-python
-	@$(MAKE) test-go
+shell-dbt:
+	@echo "🐚 Opening shell in DBT container..."
+	docker-compose -f $(COMPOSE_FILE) exec dbt bash
 
-test-python: ## Run Python unit tests
-	@echo "$(GREEN)Running Python tests...$(NC)"
-	docker-compose exec data-processor pytest tests/ -v
+shell-postgres:
+	@echo "🐚 Opening shell in PostgreSQL container..."
+	docker-compose -f $(COMPOSE_FILE) exec postgres bash
 
-test-go: ## Run Go unit tests
-	@echo "$(GREEN)Running Go tests...$(NC)"
-	docker-compose exec api-gateway go test ./... -v
+# ==========================================
+# Quick Commands
+# ==========================================
 
-test-integration: ## Run integration tests
-	@echo "$(GREEN)Running integration tests...$(NC)"
-	docker-compose exec data-processor pytest tests/integration/ -v
+quick-start: build up full-pipeline
+	@echo "🎉 Quick start complete!"
 
-lint-python: ## Lint Python code
-	docker-compose exec data-processor flake8 app/
-	docker-compose exec data-processor black --check app/
-
-lint-go: ## Lint Go code
-	docker-compose exec api-gateway golangci-lint run
-
-format-python: ## Format Python code
-	docker-compose exec data-processor black app/
-	docker-compose exec data-processor isort app/
-
-format-go: ## Format Go code
-	docker-compose exec api-gateway gofmt -w .
-
-# ============================================
-# Monitoring
-# ============================================
-
-monitoring-up: ## Start monitoring stack (Prometheus, Grafana)
-	docker-compose --profile monitoring up -d
-	@echo "$(GREEN)✓ Monitoring stack started$(NC)"
-	@echo "Grafana: http://localhost:3000 (admin/admin)"
-	@echo "Prometheus: http://localhost:9090"
-
-monitoring-down: ## Stop monitoring stack
-	docker-compose --profile monitoring down
-
-# ============================================
-# Data Management
-# ============================================
-
-db-migrate: ## Run database migrations
-	docker-compose exec data-processor alembic upgrade head
-
-db-rollback: ## Rollback last database migration
-	docker-compose exec data-processor alembic downgrade -1
-
-db-backup: ## Backup PostgreSQL database
-	@echo "$(GREEN)Backing up database...$(NC)"
-	docker-compose exec -T postgres pg_dump -U dbt_user analytics_dw > backup_$(shell date +%Y%m%d_%H%M%S).sql
-	@echo "$(GREEN)✓ Backup created$(NC)"
-
-db-restore: ## Restore PostgreSQL database (usage: make db-restore FILE=backup.sql)
-	@echo "$(YELLOW)Restoring database from $(FILE)...$(NC)"
-	docker-compose exec -T postgres psql -U dbt_user analytics_dw < $(FILE)
-	@echo "$(GREEN)✓ Database restored$(NC)"
-
-minio-ui: ## Open MinIO UI
-	@echo "$(GREEN)MinIO UI: http://localhost:9001$(NC)"
-	@echo "Credentials: minioadmin / minioadmin123"
-
-prefect-ui: ## Open Prefect UI
-	@echo "$(GREEN)Prefect UI: http://localhost:4200$(NC)"
-
-# ============================================
-# Cleanup
-# ============================================
-
-clean: ## Remove all containers, volumes, and generated files
-	@echo "$(YELLOW)Cleaning up...$(NC)"
-	docker-compose down -v
-	rm -rf data/bronze/* data/silver/* data/gold/* data/logs/*
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete 2>/dev/null || true
-	@echo "$(GREEN)✓ Cleanup complete$(NC)"
-
-clean-data: ## Remove only data directories
-	@echo "$(YELLOW)Cleaning data directories...$(NC)"
-	rm -rf data/bronze/* data/silver/* data/gold/*
-	@echo "$(GREEN)✓ Data cleaned$(NC)"
-
-clean-logs: ## Remove log files
-	rm -rf data/logs/*
-	@echo "$(GREEN)✓ Logs cleaned$(NC)"
-
-# ============================================
-# CI/CD
-# ============================================
-
-ci-test: ## Run CI tests
-	@$(MAKE) build
-	@$(MAKE) test
-	@$(MAKE) lint-python
-	@$(MAKE) lint-go
-
-deploy-dev: ## Deploy to development
-	@echo "$(GREEN)Deploying to development...$(NC)"
-	kubectl apply -f infra/kubernetes/base/
-	kubectl apply -f infra/kubernetes/overlays/dev/
-
-deploy-prod: ## Deploy to production
-	@echo "$(YELLOW)Deploying to production...$(NC)"
-	kubectl apply -f infra/kubernetes/overlays/prod/
-
-# ============================================
-# Utilities
-# ============================================
-
-fetch-rates: ## Fetch exchange rates (usage: make fetch-rates SYMBOL=BTCUSDT)
-	@SYMBOL=${SYMBOL:-BTCUSDT}; \
-	curl -X POST http://localhost:8080/api/v1/rates/fetch \
-		-H "Content-Type: application/json" \
-		-d "{\"symbol\":\"$$SYMBOL\",\"interval\":\"1h\",\"limit\":100}" | jq
-
-ingest-csv: ## Ingest CSV file (usage: make ingest-csv FILE=data/samples/transactions.csv)
-	docker-compose exec data-processor python -c "\
-from app.flows.ingestion import ingest_csv_to_bronze; \
-ingest_csv_to_bronze('$(FILE)', 'transactions', {})"
-
-health-check: ## Check service health
-	@echo "$(GREEN)Checking service health...$(NC)"
-	@curl -s http://localhost:8080/health | jq || echo "API Gateway: DOWN"
-	@curl -s http://localhost:4200/api/health | jq || echo "Prefect: DOWN"
-
-ps: ## Show running containers
-	@docker-compose ps
-
-stats: ## Show container resource usage
-	@docker stats --no-stream
+test-connection:
+	@echo "🔌 Testing database connection..."
+	@docker-compose -f $(COMPOSE_FILE) exec -T postgres pg_isready -U dataeng && echo "✅ PostgreSQL is ready!" || echo "❌ PostgreSQL is not ready"
+	@docker-compose -f $(COMPOSE_FILE) exec -T redis redis-cli ping | grep -q PONG && echo "✅ Redis is ready!" || echo "❌ Redis is not ready"

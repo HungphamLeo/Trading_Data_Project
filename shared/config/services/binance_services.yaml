@@ -1,0 +1,79 @@
+# Database Configuration
+# Supports PostgreSQL and Redis connections
+
+postgresql:
+  connection:
+    host: ${POSTGRES_HOST:-localhost}
+    port: ${POSTGRES_PORT:-5432}
+    user: ${POSTGRES_USER:-dataeng}
+    password: ${POSTGRES_PASSWORD:-dataeng123}
+    database: ${POSTGRES_DB:-dwh}
+  
+  pool:
+    # Connection pooling settings
+    size: 10
+    max_overflow: 20
+    timeout: 30
+    recycle: 3600  # Recycle connections after 1 hour
+    pre_ping: true  # Verify connection before using
+  
+  schemas:
+    # Schema organization
+    raw: public
+    staging: staging
+    integration: int
+    marts: marts
+    snapshots: snapshots
+  
+  tables:
+    # Raw tables
+    transactions: transactions
+    users: users
+    rates: rates
+  
+  performance:
+    # Query optimization
+    work_mem: "256MB"
+    maintenance_work_mem: "512MB"
+    effective_cache_size: "4GB"
+    statement_timeout: 300000  # 5 minutes
+  
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention_days: 7
+
+redis:
+  connection:
+    host: ${REDIS_HOST:-localhost}
+    port: ${REDIS_PORT:-6379}
+    db: ${REDIS_DB:-0}
+    password: ${REDIS_PASSWORD:-}
+  
+  settings:
+    decode_responses: true
+    socket_timeout: 5
+    socket_connect_timeout: 5
+    max_connections: 50
+    retry_on_timeout: true
+    health_check_interval: 30
+  
+  keys:
+    # Key prefixes for organization
+    rate_limit: "binance:ratelimit:"
+    cache: "crypto:cache:"
+    session: "app:session:"
+    lock: "distributed:lock:"
+  
+  ttl:
+    # Time-to-live in seconds
+    default: 3600        # 1 hour
+    short: 300           # 5 minutes
+    medium: 3600         # 1 hour
+    long: 86400          # 1 day
+    rates_cache: 1800    # 30 minutes
+  
+  features:
+    enable_caching: true
+    enable_rate_limiting: true
+    enable_distributed_locks: true
