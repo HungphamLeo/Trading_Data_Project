@@ -2,11 +2,7 @@
 Binance Klines Data Ingestion with Prefect
 Prefect replaces Tenacity for retry logic.
 """
-
-import os
-import sys
 import time
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
@@ -16,48 +12,36 @@ import pandas as pd
 
 from prefect import task, flow, get_run_logger
 from prefect.tasks import task_input_hash
-from datetime import timedelta
-
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from shared.logger.python_logger import get_logger
-from shared.utils.ingestion_utils.binance_setup import BinanceConfig
-
-logger = get_logger("binance_ingestion")
-
-
-# -----------------------------------------------------
-#   Core Fetcher (NO RETRY HERE) — pure functionality
-# -----------------------------------------------------
+# from shared.logger.python_logger import get_logger
+from shared.utils.files.binance_setup import BinanceConfig
+from platform.processing.dbt.binance.dto.binance_dto import BinanceGetKlinesParams, BinanceGetKlinesResponse
+# logger = get_logger("binance_ingestion")
 class BinanceKlinesFetcher:
     """Fetch klines data from Binance API"""
 
-    def __init__(self, config: BinanceConfig):
+    def __init__(self, logger, output, config: BinanceConfig):
         self.config = config
+        self.logger = logger
         self.base_url = config.get_klines_url()
         self.session = requests.Session()
-        self.output_dir = Path("/app/output/raw_rates")
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.output = output
+        # self.output_dir = Path("/app/output/raw_rates")
+        # self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def get_klines_once(
         self,
-        symbol: str,
-        interval: str,
-        start_ts_ms: int,
-        end_ts_ms: int
+        params: BinanceGetKlinesParams
     ) -> List[List]:
         """Single-attempt fetch: retry handled by Prefect"""
         limit = self.config.max_klines_per_request
         all_klines = []
-        current_start = start_ts_ms
-
-        logger.info(
-            f"Fetching {symbol} from {datetime.fromtimestamp(start_ts_ms/1000)} "
+        current_start = params.start_ts_ms
+        self.logger.info(
+            f"Fetching {params.symbol} from {datetime.fromtimestamp(params.start_ts_ms/1000)} "
             f"to {datetime.fromtimestamp(end_ts_ms/1000)}"
         )
 
-        while current_start < end_ts_ms:
+        while current_start < params.end_ts_ms:
             params = {
                 "symbol": symbol,
                 "interval": interval,
@@ -72,7 +56,7 @@ class BinanceKlinesFetcher:
                 data = response.json()
 
                 if not data:
-                    logger.warning(f"No data returned for {symbol} at {current_start}")
+                    self.logger.warning(f"No data returned for {symbol} at {current_start}")
                     break
 
                 all_klines.extend(data)
@@ -80,7 +64,7 @@ class BinanceKlinesFetcher:
                 last_close_time = data[-1][6]
                 current_start = last_close_time + 1
 
-                logger.debug(
+                self.logger.debug(
                     f"Fetched {len(data)} klines for {symbol}, total: {len(all_klines)}"
                 )
 
@@ -90,10 +74,10 @@ class BinanceKlinesFetcher:
                     break
 
             except Exception as e:
-                logger.error(f"Error fetching {symbol}: {e}")
+                self.logger.error(f"Error fetching {symbol}: {e}")
                 raise
 
-        logger.info(f"Completed fetching {symbol}: {len(all_klines)} klines")
+        self.logger.info(f"Completed fetching {symbol}: {len(all_klines)} klines")
         return all_klines
 
     def klines_to_dataframe(self, symbol: str, klines: List[List]) -> pd.DataFrame:
@@ -125,14 +109,14 @@ class BinanceKlinesFetcher:
 
     def save_to_parquet(self, df: pd.DataFrame, symbol: str, start_date: str, end_date: str):
         if df.empty:
-            logger.warning(f"Empty DataFrame for {symbol}, skipping save")
+            self.logger.warning(f"Empty DataFrame for {symbol}, skipping save")
             return
 
         filename = f"{symbol}__{start_date}__{end_date}.parquet"
         filepath = self.output_dir / filename
 
         df.to_parquet(filepath, index=False, engine="pyarrow", compression="snappy")
-        logger.info(f"Saved {len(df)} rows to {filepath}")
+        self.logger.info(f"Saved {len(df)} rows to {filepath}")
 
 
 # -----------------------------------------------------
@@ -165,10 +149,10 @@ def task_save_parquet(fetcher: BinanceKlinesFetcher, df: pd.DataFrame, symbol: s
 # -----------------------------------------------------
 
 def extract_currencies_from_transactions(csv_path: str):
-    logger.info(f"Reading transactions from {csv_path}")
+    self.logger.info(f"Reading transactions from {csv_path}")
 
     df = pd.read_csv(csv_path)
-    logger.info(f"Loaded {len(df)} transactions")
+    self.logger.info(f"Loaded {len(df)} transactions")
 
     currencies = sorted(df["destination_currency"].dropna().str.upper().unique().tolist())
 
