@@ -185,7 +185,7 @@
     └── users.xlsx
 ```
 
-Phần này gửi tôi bản copy vào file README mà ko làm vỡ
+
 
 Trước mắt thì do thời gian công việc chính bận rộn, không đủ thời gian để làm công tác test hết và fix hẵn,  nên trước mắt bản thân em sẽ trình bày các ý chính cũng như những gì mình muốn làm với các câu hỏi trong để tuyển dụng:
 
