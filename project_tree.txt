@@ -1,0 +1,96 @@
+.
+├── .dockerignore
+├── .github
+│   └── workflows
+├── .gitignore
+├── Makefile
+├── README.md
+├── infra
+│   ├── docker
+│   │   ├── ingestion
+│   │   │   └── Dockerfile
+│   │   └── processing
+│   │       └── dbt_processing
+│   │           └── Dockerfile
+│   └── docker_compose
+│       ├── core.yml
+│       └── processing.yaml
+├── logger_storage
+├── platforms
+│   ├── api_gateway
+│   ├── ingestion
+│   │   └── crypto
+│   │       └── binance
+│   │           ├── extract
+│   │           │   ├── __pycache__
+│   │           │   │   └── fetch_binance_klines.cpython-312.pyc
+│   │           │   └── fetch_binance_klines.py
+│   │           ├── parse
+│   │           └── producer
+│   ├── processing
+│   │   └── dbt
+│   │       ├── config
+│   │       │   ├── dbt_project.yaml
+│   │       │   └── profiles.yaml
+│   │       └── models
+│   │           └── crypto
+│   │               ├── dto
+│   │               │   └── binance_dto.py
+│   │               ├── int
+│   │               │   ├── int_kyc_history.sql
+│   │               │   └── int_transactions_enriched.sql
+│   │               ├── marts
+│   │               │   ├── marts_core__dim_user.sql
+│   │               │   └── marts_core__fact_transactions.sql
+│   │               ├── snapshots
+│   │               │   └── user_kyc_snapshots.sql
+│   │               ├── staging
+│   │               │   ├── schema.yml
+│   │               │   ├── stg_rates.sql
+│   │               │   ├── stg_transactions.sql
+│   │               │   └── stg_users.sql
+│   │               └── tests
+│   ├── storage
+│   │   ├── cache
+│   │   │   └── redis
+│   │   └── warehouse
+│   │       ├── base_storage.py
+│   │       └── postgresql
+│   │           ├── _init_postgresql.py
+│   │           └── crypto
+│   │               ├── bronze_crypto
+│   │               │   └── _init_tables.sql
+│   │               ├── gold_crypto
+│   │               └── silver_crypto
+│   └── streaming
+├── project_tree.txt
+├── requirements_dbt.txt
+├── requirements_ingestion.txt
+├── scripts
+│   ├── README.md
+│   ├── run_binance_ingestion.py
+│   ├── sample_bi_queries.sql
+│   └── test.ipynb
+├── services
+│   ├── test
+│   └── trading
+├── shared
+│   ├── common_models
+│   │   └── crypto
+│   ├── config
+│   │   ├── config_loader.py
+│   │   ├── envs
+│   │   ├── schema
+│   │   └── services
+│   │       └── binance_services.yaml
+│   ├── logger
+│   │   └── python_logger.py
+│   └── utils
+│       ├── files
+│       │   └── binance_setup.py
+│       └── networks
+└── temp_data_storage
+    ├── transactions.xlsx
+    └── users.xlsx
+
+192 directories, 244 files
