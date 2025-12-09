@@ -1,7 +1,9 @@
 crypto:
+  # Tên project dbt: crypto
   binance_dwh:
     target: dev
     outputs:
+
       dev:
         type: postgres
         host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
@@ -9,10 +11,21 @@ crypto:
         user: "{{ env_var('POSTGRES_USER', 'dataeng') }}"
         password: "{{ env_var('POSTGRES_PASSWORD', 'dataeng123') }}"
         dbname: "{{ env_var('POSTGRES_DB', 'dwh') }}"
-        schema: public
+        
+        # Schema riêng cho domain Crypto-Binance
+        schema: "crypto_binance_dev"
+
         threads: 4
         keepalives_idle: 0
-        
+        connect_timeout: 10
+        sslmode: prefer
+
+        # Optional: quoting để tránh conflict tên cột
+        quoting:
+          identifier: false
+          schema: false
+          database: false
+
       prod:
         type: postgres
         host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
@@ -20,6 +33,16 @@ crypto:
         user: "{{ env_var('POSTGRES_USER', 'dataeng') }}"
         password: "{{ env_var('POSTGRES_PASSWORD', 'dataeng123') }}"
         dbname: "{{ env_var('POSTGRES_DB', 'dwh') }}"
-        schema: public
+        
+        # Schema riêng cho prod
+        schema: "crypto_binance"
+
         threads: 8
         keepalives_idle: 0
+        connect_timeout: 10
+        sslmode: prefer
+
+        quoting:
+          identifier: false
+          schema: false
+          database: false
