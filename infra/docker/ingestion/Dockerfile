@@ -17,7 +17,7 @@ COPY requirements_ingestion.txt .
 RUN pip install --no-cache-dir -r requirements_ingestion.txt
 
 # Copy application code
-COPY platforms/ingestion/app/platforms/ingestion
+COPY platforms/ingestion /app/platform/ingestion
 COPY shared /app/shared
 
 # Create directories for logs and data storage
