@@ -17,7 +17,7 @@ COPY requirements_dbt.txt .
 RUN pip install --no-cache-dir -r requirements_dbt.txt
 
 # Copy DBT project
-COPY platform/processing/dbt/binance /app/dbt_project
+COPY platforms/processing/dbt /app/dbt_project
 COPY shared /app/shared
 
 # Create directories
