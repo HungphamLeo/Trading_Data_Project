@@ -37,7 +37,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dbt_user -d analytics_dw"]
       interval: 10s
@@ -109,7 +108,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./config:/app/config:ro
+      - ../../shared/config:/app/config:ro
     networks:
       - etl-network
     restart: unless-stopped
@@ -134,8 +133,8 @@ services:
       - redis
       - prefect-server
     volumes:
-      - ./config:/app/config:ro
-      - ./data:/app/data
+      - ../../shared/config:/app/config:ro
+      - ../../temp_data_storage:/app/data
     networks:
       - etl-network
     restart: unless-stopped
@@ -152,8 +151,8 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./dbt:/dbt
-      - ./config/dbt/profiles.yml:/dbt/profiles.yml:ro
+      - ../../platforms/processing/dbt:/dbt
+      - ../../platforms/processing/dbt/config/profiles.yaml:/dbt/profiles.yml:ro
     networks:
       - etl-network
     command: ["tail", "-f", "/dev/null"]  # Keep container running
