@@ -200,7 +200,7 @@ Thư mục process/dbt/crypto/models/staging => là phần liệu này là bronz
 snapshots là phần dùng để chụp tiến trình kyc theo dòng thời gian.
 dw chọn postgre là vì postgre có cả sql và nosql thì sẽ linh hoạt trong việc lưu trữ liệu, giảm chi phí vì lưu dưới on-premise và sẽ scale lên khi có như cầu sữ dụng diện rộng, khi đó hẵng cân nhắc dùng cloud.
 
-Còn lập trình chạy pipeline thì mình ưa prefect vì nbo1 đơn giản dễ dùng nhất, và cũng bởi vì mình có khuyng hướng tách các module thành nhiều tầng, đến khi set up triển khai chạy thì hướng đển việc tập trung các module về 1 file run  => trong file main call hàm run này để chạy
+Còn lập trình chạy pipeline thì mình ưa prefect vì nó đơn giản dễ dùng nhất, và cũng bởi vì mình có khuyng hướng tách các module thành nhiều tầng, đến khi set up triển khai chạy thì hướng đển việc tập trung các module về 1 file run  => trong file main call hàm run này để chạy
 
 *Note: các thông tin trên db, password, username thì bình thường sẽ dc lưu trong các file encrypt, yaml, or json,.. và được điền vào file gitignore để không push lên trên git, nhưng do tính chất dự án là bài tập nên ko cần thiết.
 
