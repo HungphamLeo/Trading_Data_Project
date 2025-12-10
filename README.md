@@ -179,9 +179,7 @@
 │       └── networks
 
 └── temp_data_storage
-
     ├── transactions.xlsx
-
     └── users.xlsx
 ```
 
