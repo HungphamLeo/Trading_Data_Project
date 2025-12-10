@@ -191,10 +191,18 @@ Trước mắt thì do thời gian công việc chính bận rộn, không đủ
 
 Đầu tiên là việc lựa chọn kiến trúc thì em muốn tách các tầng layer khi mà triển khai 1 project không khi là trong hiện tại mà còn trong tương lai, do đó thì phần 
 infra sẽ là nơi chứa các folder và Dockerfile; docker compose dùng để tiến hành chạy build docker để có thể tiến hành set up môi trường, lấy các module cần cài đặt để trong các file requirements.
-sau đó đến phần platforms thì sẽ chứa các modulelớn như phần api_gateway nếu sau này muốn xây dựng các function để đặt lệnh, get account balance, check lãi lỗi của lệnh, lượng volumns buy/sell, toàn sàn thông qua API từ trên giao diện/postman; ingresion thì sẽ bao gồm các module business scope như crypto thì trong crypto thì sẽ có binance, bybit, kucoin, okx,... hay tiến hành craw web để lấy dữ liệu công ty kinh doanh, dữ liệu ngành, hoặc lấy dữ liệu vĩ mô trên FED,.. tựu chung tầng này sẽ là nơi xác định business scope ; phần porcessing thì sẽ là phần để triển khai các data plaform để chạy etl, có thể là prefect, pysppark,  dbt,... bên trong các data platform thì sẽ gồm các business scope gồm phần models và phần config; storage sẽ là phần tập trung cácfucntion triển khai, các chức năng tiến hành các database như mongodb (nếu làm datalake, nếu trong trường hợp cần schema linh hoạt), postgresql nếu là dw (mình nghĩ nên dùng postgres vì nó hiện tại rất ổn khi có đồng thời cả phần sql lẫn nosql, còn không thì dùng oracle vì db này không gây ra hiện tường leo thang lock), redis nếu trong trường hợp xác định cache để set và get dữ liệu real -time được cập nhật từ cây nến gần nhất thông qua socket.
+sau đó đến phần platforms thì sẽ chứa các modulelớn như phần api_gateway nếu sau này muốn xây dựng các function để đặt lệnh, get account balance, check lãi lỗi của lệnh, lượng volumns buy/sell, toàn sàn thông qua API từ trên giao diện/postman; ingresion thì sẽ bao gồm các module business scope như crypto thì trong crypto thì sẽ có binance, bybit, kucoin, okx,... hay tiến hành craw web để lấy dữ liệu công ty kinh doanh, dữ liệu ngành, hoặc lấy dữ liệu vĩ mô trên FED,.. tựu chung tầng này sẽ là nơi xác định business scope ; phần porcessing thì sẽ là phần để triển khai các data plaform để chạy etl, có thể là prefect, pysppark,  dbt,... bên trong các data platform thì sẽ gồm các business scope gồm phần models và phần config; storage sẽ là phần tập trung cácfucntion triển khai, các chức năng tiến hành các database như mongodb (nếu làm datalake, nếu trong trường hợp cần schema linh hoạt), postgresql nếu là dw, redis nếu trong trường hợp xác định cache để set và get dữ liệu real -time được cập nhật từ cây nến gần nhất thông qua socket.
 Phần services sẽ là phần buil với mục đích sữ dụng source dữ liệu để làm gì ? Làm trading, làm backtest, Làm mm hay chỉ là làm powerbi report => phần sử dụng dữ liệu cho mục đích của doanh nghiệp
 Phần shared gồm các model xài hcung, uitls, confdig, logger, phần load loger, ....
-Mô hình mình làm db sẽ là start schema => đơn giản nhất thay vì dùng mô hình như snowflake, phức tạp,.
+
+
+
+Mô hình database mình làm db sẽ là start schema => đơn giản nhất thay vì những mô hình khác, dễ hiểu, khả năng triển khai nhanh trong trường hợp chưa ưu  tiến hành thiết kế db nó normalize cao.
+Thư mục process/dbt/crypto/models/staging => là phần liệu này là bronze, int=> silver và mart là gold
+snapshots là phần dùng để chụp tiến trình kyc theo dòng thời gian.
+dw chọn postgre là vì postgre có cả sql và nosql thì sẽ linh hoạt trong việc lưu trữ liệu, giảm chi phí vì lưu dưới on-premise và sẽ scale lên khi có như cầu sữ dụng diện rộng, khi đó hẵng cân nhắc dùng cloud.
+
+Còn lập trình chạy pipeline thì mình ưa prefect vì nbo1 đơn giản dễ dùng nhất, và cũng bởi vì mình có khuyng hướng tách các module thành nhiều tầng, đến khi set up triển khai chạy thì hướng đển việc tập trung các module về 1 file run  => trong file main call hàm run này để chạy
 
 *Note: các thông tin trên db, password, username thì bình thường sẽ dc lưu trong các file encrypt, yaml, or json,.. và được điền vào file gitignore để không push lên trên git, nhưng do tính chất dự án là bài tập nên ko cần thiết.
 
